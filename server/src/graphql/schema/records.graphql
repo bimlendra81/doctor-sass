@@ -1,0 +1,74 @@
+type MedicalRecord {
+  id: ID!
+  clinicId: ID!
+  patientId: ID!
+  doctorId: ID!
+  type: RecordType!
+  title: String!
+  notes: String
+  fileKey: String
+  fileName: String
+  mimeType: String
+  sizeBytes: Int
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  patient: Patient
+  doctor: Doctor
+}
+
+enum RecordType {
+  LAB
+  IMAGING
+  CLINICAL_NOTE
+  REFERRAL
+  OTHER
+}
+
+type UploadUrl {
+  url: String!
+  method: String!
+  fileKey: String!
+  expiresAt: DateTime!
+}
+
+type DownloadUrl {
+  url: String!
+  expiresAt: DateTime!
+}
+
+type MedicalRecordConnection {
+  items: [MedicalRecord!]!
+  total: Int!
+  page: Int!
+  pageSize: Int!
+}
+
+input CreateRecordInput {
+  patientId: ID!
+  doctorId: ID
+  type: RecordType!
+  title: String!
+  notes: String
+  fileKey: String
+  fileName: String
+  mimeType: String
+  sizeBytes: Int
+}
+
+input UpdateRecordInput {
+  title: String
+  notes: String
+}
+
+extend type Query {
+  records(patientId: ID, type: RecordType, page: Int, pageSize: Int): MedicalRecordConnection! @auth(requires: STAFF)
+  record(id: ID!): MedicalRecord @auth(requires: STAFF)
+  recordFileUrl(id: ID!): DownloadUrl @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  recordUploadUrl(patientId: ID!, fileName: String!, mimeType: String!): UploadUrl! @auth(requires: STAFF)
+  createRecord(input: CreateRecordInput!): MedicalRecord! @auth(requires: STAFF)
+  updateRecord(id: ID!, input: UpdateRecordInput!): MedicalRecord! @auth(requires: STAFF)
+  deleteRecord(id: ID!): Boolean! @auth(requires: STAFF)
+}

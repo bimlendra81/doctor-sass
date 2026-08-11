@@ -8,6 +8,7 @@ import { prescriptionsResolvers } from "./prescriptions.resolver.js";
 import { billingResolvers } from "./billing.resolver.js";
 import { subscriptionsResolvers } from "./subscriptions.resolver.js";
 import { notificationsResolvers } from "./notifications.resolver.js";
+import { recordsResolvers } from "./records.resolver.js";
 
 export const resolvers = {
   Query: {
@@ -22,6 +23,7 @@ export const resolvers = {
     ...billingResolvers.Query,
     ...subscriptionsResolvers.Query,
     ...notificationsResolvers.Query,
+    ...recordsResolvers.Query,
   },
   Mutation: {
     ...authResolvers.Mutation,
@@ -34,6 +36,7 @@ export const resolvers = {
     ...billingResolvers.Mutation,
     ...subscriptionsResolvers.Mutation,
     ...notificationsResolvers.Mutation,
+    ...recordsResolvers.Mutation,
   },
   Appointment: appointmentsResolvers.Appointment,
   Doctor: doctorsResolvers.Doctor,

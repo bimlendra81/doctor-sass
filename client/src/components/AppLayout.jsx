@@ -93,6 +93,12 @@ export function AppLayout() {
                 Prescriptions
               </Link>
               <Link
+                to="/records"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Records
+              </Link>
+              <Link
                 to="/invoices"
                 className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
               >

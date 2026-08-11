@@ -5,6 +5,9 @@ node_modules/
 dist/
 build/
 
+# local file uploads (M12 local storage driver)
+server/uploads/
+
 # env / secrets
 .env
 .env.local

@@ -157,6 +157,12 @@ export function Schedule() {
                       >
                         Invoice
                       </a>
+                      <a
+                        href={`/records?patientId=${a.patient?.id}`}
+                        className="text-xs font-medium text-teal-600 hover:underline"
+                      >
+                        Record
+                      </a>
                     </>
                   )}
                 </div>

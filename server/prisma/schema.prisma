@@ -53,6 +53,14 @@ enum PaymentMethod {
   ONLINE
 }
 
+enum RecordType {
+  LAB
+  IMAGING
+  CLINICAL_NOTE
+  REFERRAL
+  OTHER
+}
+
 model Clinic {
   id                 String              @id @default(uuid())
   name               String
@@ -76,6 +84,7 @@ model Clinic {
   prescriptions      Prescription[]
   invoices           Invoice[]
   payments           Payment[]
+  records            MedicalRecord[]
 }
 
 model User {
@@ -188,6 +197,7 @@ model Doctor {
   overrides      ScheduleOverride[]
   appointments   Appointment[]
   prescriptions Prescription[]
+  records        MedicalRecord[]
 }
 
 model DoctorAvailability {
@@ -239,6 +249,7 @@ model Patient {
   appointments Appointment[]
   prescriptions Prescription[]
   invoices      Invoice[]
+  records       MedicalRecord[]
 
   @@index([clinicId])
 }
@@ -392,4 +403,27 @@ model Payment {
 
   @@index([invoiceId])
   @@index([clinicId])
+}
+
+model MedicalRecord {
+  id        String     @id @default(uuid())
+  clinicId  String
+  clinic    Clinic     @relation(fields: [clinicId], references: [id])
+  patientId String
+  patient   Patient    @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor     @relation(fields: [doctorId], references: [id])
+  type      RecordType
+  title     String
+  notes     String?
+  fileKey   String?
+  fileName  String?
+  mimeType  String?
+  sizeBytes Int?
+  deletedAt DateTime?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([patientId])
+  @@index([clinicId, createdAt])
 }

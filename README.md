@@ -72,6 +72,8 @@ Or individually: `npm run dev:server`, `npm run dev:client`.
 - **E-prescriptions (M8)** — drug autocomplete (Fuse.js over bundled drug dictionary), draft → issue → void lifecycle, clinic-local script numbers, branded PDF download.
 - **Invoicing & billing (M9)** — server-computed totals, per-clinic invoice numbers, partial/full payments, void with audit trail, branded printable invoices.
 - **Subscriptions & Stripe (M10)** — per-plan usage limits enforced server-side, Stripe Checkout for upgrades, idempotent webhook sync, structured logging + optional Sentry.
+- **Notifications & reminders (M11)** — in-app feed with per-channel preferences (email/SMS/in-app), appointment status fan-out, T24H/T1H reminder jobs, password reset.
+- **Medical records (M12)** — typed records (lab/imaging/clinical note/referral/other) with optional file attachments; storage driver is env-selected (S3 presigned URLs when `S3_ACCESS_KEY` + `S3_BUCKET` are set, otherwise authenticated local `/files` routes under `server/uploads/`), expiring upload/download URLs, soft delete.
 - Video consults (planned).
 
 

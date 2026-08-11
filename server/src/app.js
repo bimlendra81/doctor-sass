@@ -13,6 +13,7 @@ import { AppError } from "./utils/errors.js";
 import { logger } from "./utils/logger.js";
 import { getPrescriptionPdf } from "./services/pharmacy/pdf.service.js";
 import { stripe, processStripeEvent } from "./services/subscription.service.js";
+import { storageDriver, assertUploadAllowed, assertDownloadAllowed, writeLocalUpload, openLocalDownload } from "./services/storage.service.js";
 
 let schema = makeExecutableSchema({ typeDefs: typeDefsSource, resolvers });
 schema = authDirectiveTransformer(schema);
@@ -53,6 +54,32 @@ app.get("/prescriptions/:id/pdf", requireAuth, async (req, res, next) => {
     res.setHeader("Content-Disposition", `inline; filename="prescription-${req.params.id}.pdf"`);
     res.setHeader("Cache-Control", "no-store");
     res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.put("/files", requireAuth, async (req, res, next) => {
+  try {
+    if (storageDriver !== "local") {
+      return res.status(400).json({ error: { code: "STORAGE_DRIVER", message: "Uploads go directly to the object store" } });
+    }
+    const { clinicId, key } = await assertUploadAllowed(req, req.query);
+    const sizeBytes = await writeLocalUpload(req, { clinicId, fileKey: key });
+    res.json({ fileKey: key, sizeBytes });
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.get("/files", requireAuth, async (req, res, next) => {
+  try {
+    const { key, fileName } = await assertDownloadAllowed(req, req.query);
+    const stream = await openLocalDownload(key);
+    res.setHeader("Content-Type", req.query.mimeType ?? "application/octet-stream");
+    res.setHeader("Cache-Control", "no-store");
+    if (fileName) res.setHeader("Content-Disposition", `inline; filename="${fileName.replace(/"/g, "")}"`);
+    stream.pipe(res);
   } catch (err) {
     next(err);
   }
