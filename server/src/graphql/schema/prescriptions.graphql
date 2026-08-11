@@ -1,0 +1,87 @@
+enum PrescriptionStatus {
+  DRAFT
+  ACTIVE
+  VOID
+}
+
+type PrescriptionItem {
+  id: ID!
+  drugName: String!
+  dosage: String
+  frequency: String
+  duration: String
+  instructions: String
+  strength: String
+  quantity: Int
+  refills: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Prescription {
+  id: ID!
+  clinicId: ID!
+  patientId: ID!
+  doctorId: ID!
+  appointmentId: ID
+  status: PrescriptionStatus!
+  scriptNo: Int
+  issuedAt: DateTime
+  notes: String
+  voidReason: String
+  voidedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  patient: Patient!
+  doctor: Doctor!
+  appointment: Appointment
+  items: [PrescriptionItem!]!
+}
+
+type Drug {
+  id: ID!
+  name: String!
+  category: String
+  uses: String
+  sideEffects: String
+  strength: String
+  packSize: String
+  manufacturer: String
+}
+
+input PrescriptionItemInput {
+  drugName: String!
+  dosage: String
+  frequency: String
+  duration: String
+  instructions: String
+  strength: String
+  quantity: Int
+  refills: Int
+}
+
+input CreatePrescriptionInput {
+  patientId: ID!
+  doctorId: ID!
+  appointmentId: ID
+  notes: String
+  items: [PrescriptionItemInput!]!
+}
+
+input UpdatePrescriptionInput {
+  notes: String
+  items: [PrescriptionItemInput!]
+}
+
+extend type Query {
+  prescriptions(patientId: ID, doctorId: ID, status: PrescriptionStatus): [Prescription!]! @auth(requires: STAFF)
+  prescription(id: ID!): Prescription @auth(requires: STAFF)
+  drugSearch(q: String!, limit: Int): [Drug!]! @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  createPrescription(input: CreatePrescriptionInput!): Prescription! @auth(requires: STAFF)
+  updatePrescription(id: ID!, input: UpdatePrescriptionInput!): Prescription! @auth(requires: STAFF)
+  issuePrescription(id: ID!): Prescription! @auth(requires: STAFF)
+  voidPrescription(id: ID!, reason: String!): Prescription! @auth(requires: STAFF)
+}

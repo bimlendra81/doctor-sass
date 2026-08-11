@@ -4,6 +4,7 @@ import { patientsResolvers } from "./patients.resolver.js";
 import { appointmentsResolvers } from "./appointments.resolver.js";
 import { doctorsResolvers } from "./doctors.resolver.js";
 import { settingsResolvers } from "./settings.resolver.js";
+import { prescriptionsResolvers } from "./prescriptions.resolver.js";
 
 export const resolvers = {
   Query: {
@@ -14,6 +15,7 @@ export const resolvers = {
     ...appointmentsResolvers.Query,
     ...doctorsResolvers.Query,
     ...settingsResolvers.Query,
+    ...prescriptionsResolvers.Query,
   },
   Mutation: {
     ...authResolvers.Mutation,
@@ -22,10 +24,12 @@ export const resolvers = {
     ...appointmentsResolvers.Mutation,
     ...doctorsResolvers.Mutation,
     ...settingsResolvers.Mutation,
+    ...prescriptionsResolvers.Mutation,
   },
   Appointment: appointmentsResolvers.Appointment,
   Doctor: doctorsResolvers.Doctor,
   ScheduleOverride: doctorsResolvers.ScheduleOverride,
+  Prescription: prescriptionsResolvers.Prescription,
   DateTime: {
     __serialize: (value) => new Date(value).toISOString(),
     __parseValue: (value) => new Date(value),

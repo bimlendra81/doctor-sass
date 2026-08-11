@@ -7,9 +7,10 @@ import { typeDefsSource } from "./graphql/schema/index.js";
 import { resolvers } from "./graphql/resolvers/index.js";
 import { buildContext } from "./graphql/context.js";
 import { authDirectiveTransformer } from "./graphql/directives/auth.js";
-import { authMiddleware } from "./middlewares/auth.js";
+import { authMiddleware, requireAuth } from "./middlewares/auth.js";
 import { errorHandler } from "./middlewares/error.js";
 import { AppError } from "./utils/errors.js";
+import { getPrescriptionPdf } from "./services/pharmacy/pdf.service.js";
 
 let schema = makeExecutableSchema({ typeDefs: typeDefsSource, resolvers });
 schema = authDirectiveTransformer(schema);
@@ -22,6 +23,18 @@ app.use(authMiddleware);
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
+});
+
+app.get("/prescriptions/:id/pdf", requireAuth, async (req, res, next) => {
+  try {
+    const buffer = await getPrescriptionPdf(req.user, req.params.id);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `inline; filename="prescription-${req.params.id}.pdf"`);
+    res.setHeader("Cache-Control", "no-store");
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
 });
 
 const graphqlServer = new ApolloServer({
