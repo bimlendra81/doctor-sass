@@ -21,3 +21,17 @@ export const refreshTokenSchema = z.object({
 export const verifyEmailSchema = z.object({
   token: z.string().min(1),
 });
+
+export const requestPasswordResetSchema = z.object({
+  email: emailSchema,
+});
+
+export const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  newPassword: z.string().min(8, "Password must be at least 8 characters").max(72),
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8, "Password must be at least 8 characters").max(72),
+});

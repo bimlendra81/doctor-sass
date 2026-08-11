@@ -4,6 +4,8 @@ import { validate } from "../utils/validate.js";
 import { zonedDayBounds } from "../utils/timezone.js";
 import { getClinicTimezone } from "./clinic.service.js";
 import { assertPlanLimit } from "./subscription.service.js";
+import { notifyClinicAdmins } from "./notification.service.js";
+import { logger } from "../utils/logger.js";
 import {
   createInvoiceSchema,
   recordPaymentSchema,
@@ -127,7 +129,16 @@ export async function createInvoice(ctx, input) {
       },
       ...INVOICE_WITH_ITEMS,
     }),
-  );
+  ).then((invoice) => {
+    notifyClinicAdmins({
+      clinicId: ctx.clinicId,
+      excludeUserId: ctx.userId,
+      type: "INVOICE_CREATED",
+      title: "Invoice created",
+      body: `Invoice #${nextInvoiceNo} for ${total} ${currency}.`,
+    }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+    return invoice;
+  });
 }
 
 export async function recordPayment(ctx, input) {
@@ -157,7 +168,7 @@ export async function recordPayment(ctx, input) {
   const newPaidCents = paidCents + paymentCents;
   const status = newPaidCents >= totalCents ? "PAID" : "OPEN";
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     await tx.payment.create({
       data: {
         clinicId: ctx.clinicId,
@@ -175,6 +186,16 @@ export async function recordPayment(ctx, input) {
       ...INVOICE_WITH_ITEMS,
     });
   });
+
+  await notifyClinicAdmins({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "PAYMENT_RECORDED",
+    title: "Payment recorded",
+    body: `${data.amount} ${invoice.currency} against invoice #${invoice.invoiceNo}.`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+
+  return result;
 }
 
 export async function voidInvoice(ctx, id, reason) {
@@ -188,9 +209,19 @@ export async function voidInvoice(ctx, id, reason) {
     throw new AppError("A paid invoice cannot be voided", "INVALID_STATUS", 400);
   }
 
-  return prisma.invoice.update({
+  const voided = await prisma.invoice.update({
     where: { id },
     data: { status: "VOID", voidReason: data.reason, voidedAt: new Date() },
     ...INVOICE_WITH_ITEMS,
   });
+
+  await notifyClinicAdmins({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "INVOICE_VOIDED",
+    title: "Invoice voided",
+    body: `Invoice #${invoice.invoiceNo} voided. ${data.reason}`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+
+  return voided;
 }

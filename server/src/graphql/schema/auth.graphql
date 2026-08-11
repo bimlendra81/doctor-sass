@@ -49,4 +49,23 @@ extend type Mutation {
   refreshToken(input: RefreshTokenInput!): AuthPayload!
   logout(refreshToken: String!): Boolean!
   verifyEmail(token: String!): Boolean!
+  requestPasswordReset(email: String!): PasswordResetPayload!
+  resetPassword(input: ResetPasswordInput!): Boolean!
+  changePassword(input: ChangePasswordInput!): Boolean! @auth(requires: PATIENT)
+}
+
+input ResetPasswordInput {
+  token: String!
+  newPassword: String!
+}
+
+input ChangePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
+type PasswordResetPayload {
+  # Dev-only: returned until real email delivery lands (Phase 2 notifications).
+  token: String
+  sent: Boolean!
 }

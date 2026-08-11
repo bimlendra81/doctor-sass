@@ -2,6 +2,8 @@ import { prisma } from "../config/db.js";
 import { AppError, notFound } from "../utils/errors.js";
 import { validate } from "../utils/validate.js";
 import { assertPlanLimit } from "./subscription.service.js";
+import { notifyClinicAdmins } from "./notification.service.js";
+import { logger } from "../utils/logger.js";
 import {
   createPrescriptionSchema,
   updatePrescriptionSchema,
@@ -121,11 +123,21 @@ export async function issuePrescription(ctx, id) {
   });
   const nextScriptNo = (last?.scriptNo ?? 0) + 1;
 
-  return prisma.prescription.update({
+  const issued = await prisma.prescription.update({
     where: { id },
     data: { status: "ACTIVE", scriptNo: nextScriptNo, issuedAt: new Date() },
     ...PRESCRIPTION_WITH_ITEMS,
   });
+
+  await notifyClinicAdmins({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "PRESCRIPTION_ISSUED",
+    title: "Prescription issued",
+    body: `Script #${nextScriptNo} for patient ${prescription.patientId} issued by ${prescription.doctorId}.`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+
+  return issued;
 }
 
 export async function voidPrescription(ctx, id, reason) {

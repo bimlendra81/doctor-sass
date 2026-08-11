@@ -69,3 +69,9 @@ export const ME_QUERY = gql`
   }
   ${USER_FIELDS}
 `;
+
+export const CHANGE_PASSWORD_MUTATION = gql`
+  mutation ChangePassword($input: ChangePasswordInput!) {
+    changePassword(input: $input)
+  }
+`;

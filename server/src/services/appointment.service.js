@@ -7,6 +7,9 @@ import { bookAppointmentSchema, cancelAppointmentSchema } from "../validators/ap
 import { getClinicTimezone } from "./clinic.service.js";
 import { doctorSlots } from "./availability.service.js";
 import { assertPlanLimit } from "./subscription.service.js";
+import { notifyClinicStaff } from "./notification.service.js";
+import { scheduleReminders } from "./reminder.service.js";
+import { logger } from "../utils/logger.js";
 
 const TERMINAL = new Set([
   AppointmentStatus.COMPLETED,
@@ -106,7 +109,7 @@ export async function bookAppointment(ctx, input) {
     throw new AppError("That slot is already booked", "SLOT_TAKEN", 409);
   }
 
-  return prisma.appointment.create({
+  const appointment = await prisma.appointment.create({
     data: {
       clinicId: ctx.clinicId,
       doctorId: data.doctorId,
@@ -117,9 +120,21 @@ export async function bookAppointment(ctx, input) {
       note: data.note ?? null,
     },
   });
-}
 
-async function getAppointment(ctx, id) {
+  // M11: notify staff and schedule T24H/T1H reminders for upcoming appointments.
+  await notifyClinicStaff({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "APPOINTMENT_BOOKED",
+    title: "New appointment booked",
+    body: `${patient.name} at ${startTime.toISOString()}`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+  await scheduleReminders(appointment).catch((err) =>
+    logger.warn("reminder scheduling failed", { error: err.message })
+  );
+
+  return appointment;
+}async function getAppointment(ctx, id) {
   const appointment = await prisma.appointment.findFirst({
     where: { id, clinicId: ctx.clinicId },
   });
@@ -134,7 +149,15 @@ export async function confirmAppointment(ctx, id) {
   if (TERMINAL.has(appointment.status)) {
     throw new AppError(`Cannot confirm a ${appointment.status} appointment`, "INVALID_STATUS", 400);
   }
-  return prisma.appointment.update({ where: { id }, data: { status: AppointmentStatus.CONFIRMED } });
+  const updated = await prisma.appointment.update({ where: { id }, data: { status: AppointmentStatus.CONFIRMED } });
+  await notifyClinicStaff({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "APPOINTMENT_CONFIRMED",
+    title: "Appointment confirmed",
+    body: `${appointment.startTime.toISOString()}`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+  return updated;
 }
 
 export async function completeAppointment(ctx, id) {
@@ -142,7 +165,15 @@ export async function completeAppointment(ctx, id) {
   if (appointment.status !== AppointmentStatus.CONFIRMED) {
     throw new AppError("Only confirmed appointments can be completed", "INVALID_STATUS", 400);
   }
-  return prisma.appointment.update({ where: { id }, data: { status: AppointmentStatus.COMPLETED } });
+  const updated = await prisma.appointment.update({ where: { id }, data: { status: AppointmentStatus.COMPLETED } });
+  await notifyClinicStaff({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "APPOINTMENT_COMPLETED",
+    title: "Appointment completed",
+    body: `${appointment.startTime.toISOString()}`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+  return updated;
 }
 
 export async function cancelAppointment(ctx, id, cancelReason) {
@@ -151,7 +182,7 @@ export async function cancelAppointment(ctx, id, cancelReason) {
   if (TERMINAL.has(appointment.status)) {
     throw new AppError(`Cannot cancel a ${appointment.status} appointment`, "INVALID_STATUS", 400);
   }
-  return prisma.appointment.update({
+  const updated = await prisma.appointment.update({
     where: { id },
     data: {
       status: AppointmentStatus.CANCELLED,
@@ -159,6 +190,14 @@ export async function cancelAppointment(ctx, id, cancelReason) {
       cancelledAt: new Date(),
     },
   });
+  await notifyClinicStaff({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "APPOINTMENT_CANCELLED",
+    title: "Appointment cancelled",
+    body: `${appointment.startTime.toISOString()}${data.cancelReason ? ` — ${data.cancelReason}` : ""}`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+  return updated;
 }
 
 export async function markNoShow(ctx, id) {
@@ -166,5 +205,13 @@ export async function markNoShow(ctx, id) {
   if (TERMINAL.has(appointment.status)) {
     throw new AppError(`Cannot mark a ${appointment.status} appointment as no-show`, "INVALID_STATUS", 400);
   }
-  return prisma.appointment.update({ where: { id }, data: { status: AppointmentStatus.NO_SHOW } });
+  const updated = await prisma.appointment.update({ where: { id }, data: { status: AppointmentStatus.NO_SHOW } });
+  await notifyClinicStaff({
+    clinicId: ctx.clinicId,
+    excludeUserId: ctx.userId,
+    type: "APPOINTMENT_NO_SHOW",
+    title: "Appointment no-show",
+    body: `${appointment.startTime.toISOString()}`,
+  }).catch((err) => logger.warn("notification dispatch failed", { error: err.message }));
+  return updated;
 }

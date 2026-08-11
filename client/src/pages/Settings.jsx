@@ -6,6 +6,7 @@ import {
   CLINIC_SETTINGS_QUERY,
   UPDATE_CLINIC_SETTINGS_MUTATION,
 } from "../features/settings/api.js";
+import { CHANGE_PASSWORD_MUTATION } from "../features/auth/api.js";
 
 const CURRENCY_LABELS = {
   usd: "USD — US Dollar",
@@ -33,7 +34,37 @@ export function Settings() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
 
+  const [changePassword, { loading: savingPassword }] = useMutation(CHANGE_PASSWORD_MUTATION);
+  const [pw, setPw] = useState({ currentPassword: "", newPassword: "", confirm: "" });
+  const [pwSaved, setPwSaved] = useState(false);
+  const [pwError, setPwError] = useState(null);
+
   const settings = data?.clinicSettings;
+
+  const setPwField = (field) => (e) => {
+    setPw((prev) => ({ ...prev, [field]: e.target.value }));
+    setPwSaved(false);
+    setPwError(null);
+  };
+
+  const onPasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPwError(null);
+    setPwSaved(false);
+    if (pw.newPassword !== pw.confirm) {
+      setPwError("New passwords do not match");
+      return;
+    }
+    try {
+      await changePassword({
+        variables: { input: { currentPassword: pw.currentPassword, newPassword: pw.newPassword } },
+      });
+      setPw({ currentPassword: "", newPassword: "", confirm: "" });
+      setPwSaved(true);
+    } catch (err) {
+      setPwError(err.graphQLErrors?.[0]?.message ?? err.message ?? "Could not change password");
+    }
+  };
 
   useEffect(() => {
     if (settings && !form) {
@@ -157,6 +188,45 @@ export function Settings() {
         <Button type="submit" disabled={saving}>
           {saving ? "Saving…" : "Save settings"}
         </Button>
+      </form>
+
+      <form onSubmit={onPasswordSubmit} className="space-y-6">
+        <div className="rounded-xl bg-white p-6 shadow">
+          <h2 className="text-lg font-semibold text-gray-900">Password</h2>
+          <p className="mt-1 text-sm text-gray-500">Change the password for your account.</p>
+          <div className="mt-4 grid grid-cols-1 gap-4">
+            <Input
+              label="Current password"
+              type="password"
+              value={pw.currentPassword}
+              onChange={setPwField("currentPassword")}
+              required
+            />
+            <Input
+              label="New password"
+              type="password"
+              value={pw.newPassword}
+              onChange={setPwField("newPassword")}
+              required
+            />
+            <Input
+              label="Confirm new password"
+              type="password"
+              value={pw.confirm}
+              onChange={setPwField("confirm")}
+              required
+            />
+          </div>
+
+          {pwError && <p className="mt-3 text-sm text-red-600">{pwError}</p>}
+          {pwSaved && <p className="mt-3 text-sm font-medium text-green-700">Password updated.</p>}
+
+          <div className="mt-4">
+            <Button type="submit" disabled={savingPassword}>
+              {savingPassword ? "Updating…" : "Update password"}
+            </Button>
+          </div>
+        </div>
       </form>
     </div>
   );

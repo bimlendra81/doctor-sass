@@ -12,6 +12,7 @@ export function buildContext({ user, req }) {
   return {
     prisma,
     user,
+    userId: user?.id ?? null,
     clinicId,
     req,
     loaders: {

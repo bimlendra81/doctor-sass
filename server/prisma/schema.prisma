@@ -96,6 +96,9 @@ model User {
   refreshTokens RefreshToken[]
   emailVerifications EmailVerificationToken[]
   payments      Payment[]
+  notifications Notification[]
+  notificationPreferences NotificationPreference[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model RefreshToken {
@@ -120,6 +123,56 @@ model EmailVerificationToken {
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  clinicId  String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([clinicId, createdAt])
+}
+
+model NotificationPreference {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel   String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, channel])
+}
+
+model ReminderJob {
+  id            String   @id @default(uuid())
+  appointmentId String
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  type          String
+  scheduledFor  DateTime
+  sentAt        DateTime?
+  createdAt     DateTime @default(now())
+
+  @@unique([appointmentId, type])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
 
   @@index([userId])
 }
@@ -209,6 +262,7 @@ model Appointment {
   updatedAt          DateTime          @updatedAt
   prescriptions Prescription[]
   invoices      Invoice[]
+  reminders     ReminderJob[]
 
   @@index([clinicId, startTime])
   @@index([doctorId, startTime])

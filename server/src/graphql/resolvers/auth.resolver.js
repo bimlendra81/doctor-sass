@@ -14,5 +14,8 @@ export const authResolvers = {
     refreshToken: (_parent, args, ctx) => authService.refreshToken(args.input, userAgentFrom(ctx)),
     logout: (_parent, args) => authService.logout(args.refreshToken),
     verifyEmail: (_parent, args) => authService.verifyEmail(args.token),
+    requestPasswordReset: (_parent, args) => authService.requestPasswordReset(args.email),
+    resetPassword: (_parent, args) => authService.resetPassword(args.input.token, args.input.newPassword),
+    changePassword: (_parent, args, ctx) => authService.changePassword(ctx, args.input),
   },
 };

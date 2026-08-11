@@ -1,0 +1,34 @@
+type Notification {
+  id: ID!
+  clinicId: ID!
+  userId: ID!
+  type: String!
+  title: String!
+  body: String!
+  isRead: Boolean!
+  createdAt: DateTime!
+}
+
+type NotificationPreference {
+  channel: String!
+  enabled: Boolean!
+}
+
+type NotificationPage {
+  total: Int!
+  page: Int!
+  pageSize: Int!
+  items: [Notification!]!
+}
+
+extend type Query {
+  myNotifications(unreadOnly: Boolean, page: Int, pageSize: Int): NotificationPage! @auth(requires: PATIENT)
+  unreadNotificationCount: Int! @auth(requires: PATIENT)
+  myNotificationPreferences: [NotificationPreference!]! @auth(requires: PATIENT)
+}
+
+extend type Mutation {
+  markNotificationRead(id: ID!): Notification! @auth(requires: PATIENT)
+  markAllNotificationsRead: Boolean! @auth(requires: PATIENT)
+  setNotificationPreference(channel: String!, enabled: Boolean!): Boolean! @auth(requires: PATIENT)
+}

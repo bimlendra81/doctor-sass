@@ -14,6 +14,7 @@ import { Settings } from "../pages/Settings.jsx";
 import { Prescriptions } from "../pages/Prescriptions.jsx";
 import { Invoices } from "../pages/Invoices.jsx";
 import { Billing } from "../pages/Billing.jsx";
+import { Notifications } from "../pages/Notifications.jsx";
 
 const router = createBrowserRouter([
   {
@@ -98,6 +99,14 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <Settings />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "/notifications",
+        element: (
+          <RequireAuth>
+            <Notifications />
           </RequireAuth>
         ),
       },

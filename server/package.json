@@ -27,6 +27,7 @@
     "fuse.js": "^7.5.0",
     "graphql": "^16.9.0",
     "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.10.1",
     "pdfkit": "^0.19.1",
     "stripe": "^22.5.0",
     "zod": "^4.4.3"

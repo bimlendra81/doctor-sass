@@ -6,14 +6,19 @@ import { hashPassword, verifyPassword } from "../utils/password.js";
 import { signAccessToken, generateOpaqueToken, hashToken } from "../utils/tokens.js";
 import { ttlToMs } from "../utils/time.js";
 import { validate } from "../utils/validate.js";
+import { sendEmail } from "./notifier.service.js";
 import {
   signupSchema,
   loginSchema,
   refreshTokenSchema,
   verifyEmailSchema,
+  requestPasswordResetSchema,
+  resetPasswordSchema,
+  changePasswordSchema,
 } from "../validators/auth.validator.js";
 
 const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
+const RESET_TTL_MS = 60 * 60 * 1000;
 
 export function toPublicUser(user) {
   const { passwordHash, inviteTokenHash, inviteTokenExpiresAt, ...publicUser } = user;
@@ -142,5 +147,64 @@ export async function verifyEmail(token) {
     prisma.emailVerificationToken.update({ where: { id: stored.id }, data: { usedAt: new Date() } }),
     prisma.user.update({ where: { id: stored.userId }, data: { emailVerified: true } }),
   ]);
+  return true;
+}
+
+export async function requestPasswordReset(email) {
+  const data = validate(requestPasswordResetSchema, { email });
+  const user = await prisma.user.findUnique({ where: { email: data.email } });
+  if (!user) {
+    // Do not reveal whether the account exists.
+    return true;
+  }
+
+  const rawToken = generateOpaqueToken();
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      tokenHash: hashToken(rawToken),
+      expiresAt: new Date(Date.now() + RESET_TTL_MS),
+    },
+  });
+
+  await sendEmail({
+    to: user.email,
+    subject: "Reset your password",
+    html: `<p>Use this token to reset your password:</p><p><code>${rawToken}</code></p><p>It expires in 1 hour.</p>`,
+  });
+
+  return { sent: true, token: rawToken };
+}
+
+export async function resetPassword(token, newPassword) {
+  const data = validate(resetPasswordSchema, { token, newPassword });
+
+  const tokenHash = hashToken(data.token);
+  const stored = await prisma.passwordResetToken.findUnique({ where: { tokenHash } });
+  if (!stored || stored.usedAt || stored.expiresAt < new Date()) {
+    throw new AppError("Invalid or expired reset token", "INVALID_RESET_TOKEN", 400);
+  }
+
+  const passwordHash = await hashPassword(data.newPassword);
+  await prisma.$transaction([
+    prisma.passwordResetToken.update({ where: { id: stored.id }, data: { usedAt: new Date() } }),
+    prisma.user.update({ where: { id: stored.userId }, data: { passwordHash } }),
+    prisma.refreshToken.updateMany({
+      where: { userId: stored.userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    }),
+  ]);
+  return true;
+}
+
+export async function changePassword(ctx, input) {
+  const data = validate(changePasswordSchema, input);
+  const user = await prisma.user.findUnique({ where: { id: ctx.user.id } });
+  if (!user || !(await verifyPassword(data.currentPassword, user.passwordHash))) {
+    throw new AppError("Current password is incorrect", "INVALID_PASSWORD", 400);
+  }
+
+  const passwordHash = await hashPassword(data.newPassword);
+  await prisma.user.update({ where: { id: ctx.user.id }, data: { passwordHash } });
   return true;
 }
