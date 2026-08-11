@@ -65,6 +65,8 @@ model Clinic {
   contactEmail       String?
   contactPhone       String?
   currency           String              @default("usd")
+  stripeCustomerId   String?             @unique
+  stripeSubscriptionId String?           @unique
   createdAt          DateTime            @default(now())
   users              User[]
   patients           Patient[]
@@ -296,6 +298,13 @@ model Invoice {
   @@index([clinicId, createdAt])
   @@index([patientId])
   @@index([appointmentId])
+}
+
+model WebhookEvent {
+  id        String   @id @default(uuid())
+  eventId   String   @unique
+  type      String
+  createdAt DateTime @default(now())
 }
 
 model InvoiceItem {
