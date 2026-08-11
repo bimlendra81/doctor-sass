@@ -13,6 +13,7 @@ import { Availability } from "../pages/Availability.jsx";
 import { Settings } from "../pages/Settings.jsx";
 import { Prescriptions } from "../pages/Prescriptions.jsx";
 import { Invoices } from "../pages/Invoices.jsx";
+import { Billing } from "../pages/Billing.jsx";
 
 const router = createBrowserRouter([
   {
@@ -81,6 +82,14 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <Invoices />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "/billing",
+        element: (
+          <RequireAuth>
+            <Billing />
           </RequireAuth>
         ),
       },

@@ -1,12 +1,16 @@
 import { Link, Outlet } from "react-router-dom";
+import { useQuery } from "@apollo/client";
 import { useAuth } from "../hooks/useAuth.js";
 import { useUiStore } from "../stores/uiStore.js";
 import { Button } from "./ui/index.js";
+import { CLINIC_SETTINGS_QUERY } from "../features/settings/api.js";
 
 export function AppLayout() {
   const { user, logout } = useAuth();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const { data: settingsData } = useQuery(CLINIC_SETTINGS_QUERY, { skip: !user });
+  const plan = settingsData?.clinicSettings?.plan;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -26,6 +30,14 @@ export function AppLayout() {
         </div>
         {user && (
           <div className="flex items-center gap-3">
+            {plan && (
+              <Link
+                to="/billing"
+                className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 hover:bg-teal-100"
+              >
+                {plan} plan
+              </Link>
+            )}
             <span className="text-sm text-gray-600">{user.name}</span>
             <Button variant="secondary" onClick={logout}>
               Logout
@@ -85,6 +97,12 @@ export function AppLayout() {
                 className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
               >
                 Invoices
+              </Link>
+              <Link
+                to="/billing"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Billing
               </Link>
               <Link
                 to="/settings"
