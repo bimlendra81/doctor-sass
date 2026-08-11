@@ -1,0 +1,88 @@
+enum InvoiceStatus {
+  DRAFT
+  OPEN
+  PAID
+  VOID
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+}
+
+type InvoiceItem {
+  id: ID!
+  description: String!
+  qty: Int!
+  unitPrice: Float!
+  amount: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Payment {
+  id: ID!
+  amount: Float!
+  method: PaymentMethod!
+  stripePaymentId: String
+  note: String
+  createdAt: DateTime!
+}
+
+type Invoice {
+  id: ID!
+  clinicId: ID!
+  patientId: ID!
+  appointmentId: ID
+  invoiceNo: Int!
+  subtotal: Float!
+  tax: Float!
+  total: Float!
+  balanceDue: Float!
+  currency: String!
+  status: InvoiceStatus!
+  dueDate: DateTime
+  voidReason: String
+  voidedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  patient: Patient!
+  appointment: Appointment
+  items: [InvoiceItem!]!
+  payments: [Payment!]!
+}
+
+input InvoiceItemInput {
+  description: String!
+  qty: Int!
+  unitPrice: Float!
+}
+
+input CreateInvoiceInput {
+  patientId: ID!
+  appointmentId: ID
+  items: [InvoiceItemInput!]!
+  taxRate: Float
+  dueDate: DateTime
+}
+
+input RecordPaymentInput {
+  invoiceId: ID!
+  amount: Float!
+  method: PaymentMethod!
+  stripePaymentId: String
+  note: String
+}
+
+extend type Query {
+  invoices(patientId: ID, status: InvoiceStatus, date: String): [Invoice!]!
+    @auth(requires: STAFF)
+  invoice(id: ID!): Invoice @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  createInvoice(input: CreateInvoiceInput!): Invoice! @auth(requires: STAFF)
+  voidInvoice(id: ID!, reason: String!): Invoice! @auth(requires: STAFF)
+  recordPayment(input: RecordPaymentInput!): Invoice! @auth(requires: STAFF)
+}

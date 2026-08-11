@@ -12,6 +12,7 @@ import { Booking } from "../pages/Booking.jsx";
 import { Availability } from "../pages/Availability.jsx";
 import { Settings } from "../pages/Settings.jsx";
 import { Prescriptions } from "../pages/Prescriptions.jsx";
+import { Invoices } from "../pages/Invoices.jsx";
 
 const router = createBrowserRouter([
   {
@@ -72,6 +73,14 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <Prescriptions />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "/invoices",
+        element: (
+          <RequireAuth>
+            <Invoices />
           </RequireAuth>
         ),
       },

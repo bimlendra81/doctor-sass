@@ -144,12 +144,20 @@ export function Schedule() {
                     </>
                   )}
                   {a.status === "COMPLETED" && (
-                    <a
-                      href={`/prescriptions?appointmentId=${a.id}&patientId=${a.patient?.id}`}
-                      className="text-xs font-medium text-teal-600 hover:underline"
-                    >
-                      Rx
-                    </a>
+                    <>
+                      <a
+                        href={`/prescriptions?appointmentId=${a.id}&patientId=${a.patient?.id}`}
+                        className="text-xs font-medium text-teal-600 hover:underline"
+                      >
+                        Rx
+                      </a>
+                      <a
+                        href={`/invoices?appointmentId=${a.id}&patientId=${a.patient?.id}`}
+                        className="text-xs font-medium text-teal-600 hover:underline"
+                      >
+                        Invoice
+                      </a>
+                    </>
                   )}
                 </div>
               </li>
