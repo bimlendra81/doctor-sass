@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE `clinic` ADD COLUMN `brandName` VARCHAR(191) NULL,
+    ADD COLUMN `contactEmail` VARCHAR(191) NULL,
+    ADD COLUMN `contactPhone` VARCHAR(191) NULL,
+    ADD COLUMN `currency` VARCHAR(191) NOT NULL DEFAULT 'usd',
+    ADD COLUMN `logoUrl` VARCHAR(191) NULL,
+    ADD COLUMN `timezone` VARCHAR(191) NOT NULL DEFAULT 'UTC';

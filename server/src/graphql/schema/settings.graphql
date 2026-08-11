@@ -1,0 +1,36 @@
+type ClinicSettings {
+  id: ID!
+  name: String!
+  subdomain: String!
+  timezone: String!
+  brandName: String
+  logoUrl: String
+  contactEmail: String
+  contactPhone: String
+  currency: String!
+  plan: Plan!
+  subscriptionStatus: String!
+}
+
+input UpdateClinicSettingsInput {
+  name: String
+  brandName: String
+  logoUrl: String
+  timezone: String
+  contactEmail: String
+  contactPhone: String
+  currency: String
+}
+
+type UpdateClinicSettingsPayload {
+  settings: ClinicSettings!
+}
+
+extend type Query {
+  clinicSettings: ClinicSettings! @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  updateClinicSettings(input: UpdateClinicSettingsInput!): UpdateClinicSettingsPayload!
+    @auth(requires: CLINIC_ADMIN)
+}

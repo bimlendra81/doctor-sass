@@ -1,0 +1,76 @@
+type Doctor {
+  id: ID!
+  userId: ID!
+  specialization: String
+  licenseNo: String
+  bio: String
+  user: User!
+  availabilities: [DoctorAvailabilityRule!]!
+}
+
+type DoctorAvailabilityRule {
+  id: ID!
+  dayOfWeek: Int!
+  startTime: String!
+  endTime: String!
+  slotDuration: Int!
+}
+
+type ScheduleOverride {
+  id: ID!
+  doctorId: ID!
+  date: String!
+  startTime: String!
+  endTime: String!
+  reason: String
+}
+
+type DoctorAvailability {
+  weekly: [DoctorAvailabilityRule!]!
+  overrides: [ScheduleOverride!]!
+}
+
+type TimeSlot {
+  startTime: DateTime!
+  endTime: DateTime!
+  booked: Boolean!
+  appointmentId: ID
+  status: AppointmentStatus
+}
+
+input DoctorProfileInput {
+  specialization: String
+  licenseNo: String
+  bio: String
+}
+
+input AvailabilityInput {
+  dayOfWeek: Int!
+  startTime: String!
+  endTime: String!
+  slotDuration: Int
+  doctorId: ID
+}
+
+input ScheduleOverrideInput {
+  doctorId: ID!
+  date: String!
+  startTime: String!
+  endTime: String!
+  reason: String
+}
+
+extend type Query {
+  doctors: [Doctor!]! @auth(requires: STAFF)
+  doctor(id: ID!): Doctor @auth(requires: STAFF)
+  doctorAvailability(doctorId: ID!): DoctorAvailability! @auth(requires: STAFF)
+  doctorSlots(doctorId: ID!, date: String!): [TimeSlot!]! @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  upsertDoctorProfile(input: DoctorProfileInput!): Doctor! @auth(requires: DOCTOR)
+  setAvailability(input: AvailabilityInput!): DoctorAvailabilityRule! @auth(requires: DOCTOR)
+  deleteAvailability(dayOfWeek: Int!): Boolean! @auth(requires: DOCTOR)
+  createScheduleOverride(input: ScheduleOverrideInput!): ScheduleOverride! @auth(requires: DOCTOR)
+  deleteScheduleOverride(id: ID!): Boolean! @auth(requires: DOCTOR)
+}

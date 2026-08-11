@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  CLINIC_ADMIN
+  DOCTOR
+  STAFF
+  PATIENT
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum AppointmentType {
+  IN_PERSON
+  VIDEO
+}
+
+model Clinic {
+  id                 String              @id @default(uuid())
+  name               String
+  subdomain          String              @unique
+  plan               Plan                @default(FREE)
+  subscriptionStatus String              @default("active")
+  timezone           String              @default("UTC")
+  brandName          String?
+  logoUrl            String?
+  contactEmail       String?
+  contactPhone       String?
+  currency           String              @default("usd")
+  createdAt          DateTime            @default(now())
+  users              User[]
+  patients           Patient[]
+  appointments       Appointment[]
+  doctorAvailabilities DoctorAvailability[]
+  scheduleOverrides  ScheduleOverride[]
+}
+
+model User {
+  id            String   @id @default(uuid())
+  clinicId      String?
+  clinic        Clinic?  @relation(fields: [clinicId], references: [id])
+  role          Role
+  name          String
+  email         String   @unique
+  passwordHash  String?
+  phone         String?
+  emailVerified Boolean  @default(false)
+  inviteTokenHash   String?  @unique
+  inviteTokenExpiresAt DateTime?
+  createdAt     DateTime @default(now())
+  doctor        Doctor?
+  patient       Patient?
+  refreshTokens RefreshToken[]
+  emailVerifications EmailVerificationToken[]
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  replacedBy String?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model Doctor {
+  id             String            @id @default(uuid())
+  userId         String            @unique
+  user           User              @relation(fields: [userId], references: [id])
+  specialization String?
+  licenseNo      String?
+  bio            String?
+  availabilities DoctorAvailability[]
+  overrides      ScheduleOverride[]
+  appointments   Appointment[]
+}
+
+model DoctorAvailability {
+  id           String   @id @default(uuid())
+  clinicId     String
+  clinic       Clinic   @relation(fields: [clinicId], references: [id])
+  doctorId     String
+  doctor       Doctor   @relation(fields: [doctorId], references: [id])
+  dayOfWeek    Int
+  startTime    String
+  endTime      String
+  slotDuration Int      @default(30)
+
+  @@index([doctorId, dayOfWeek])
+}
+
+model ScheduleOverride {
+  id        String   @id @default(uuid())
+  clinicId  String
+  clinic    Clinic   @relation(fields: [clinicId], references: [id])
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  date      DateTime @db.Date
+  startTime String
+  endTime   String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@unique([doctorId, date])
+  @@index([clinicId, date])
+}
+
+model Patient {
+  id          String       @id @default(uuid())
+  clinicId    String
+  clinic      Clinic       @relation(fields: [clinicId], references: [id])
+  userId      String?      @unique
+  user        User?        @relation(fields: [userId], references: [id])
+  name        String
+  email       String?
+  phone       String?
+  dob         DateTime?
+  gender      String?
+  bloodGroup  String?
+  address     String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  deletedAt   DateTime?
+  appointments Appointment[]
+
+  @@index([clinicId])
+}
+
+model Appointment {
+  id           String            @id @default(uuid())
+  clinicId     String
+  clinic       Clinic            @relation(fields: [clinicId], references: [id])
+  doctorId     String
+  doctor       Doctor            @relation(fields: [doctorId], references: [id])
+  patientId    String
+  patient      Patient           @relation(fields: [patientId], references: [id])
+  startTime    DateTime
+  endTime      DateTime
+  status       AppointmentStatus @default(PENDING)
+  type         AppointmentType   @default(IN_PERSON)
+  note         String?
+  cancelReason String?
+  cancelledAt  DateTime?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([clinicId, startTime])
+  @@index([doctorId, startTime])
+}

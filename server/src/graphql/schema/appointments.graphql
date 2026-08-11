@@ -1,0 +1,61 @@
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum AppointmentType {
+  IN_PERSON
+  VIDEO
+}
+
+type Appointment {
+  id: ID!
+  clinicId: ID!
+  doctorId: ID!
+  patientId: ID!
+  startTime: DateTime!
+  endTime: DateTime!
+  status: AppointmentStatus!
+  type: AppointmentType!
+  note: String
+  cancelReason: String
+  cancelledAt: DateTime
+  createdAt: DateTime!
+  patient: Patient!
+  doctor: Doctor!
+}
+
+input BookAppointmentInput {
+  patientId: ID!
+  doctorId: ID!
+  startTime: DateTime!
+  type: AppointmentType
+  note: String
+}
+
+type StatusCount {
+  status: AppointmentStatus!
+  count: Int!
+}
+
+type DashboardStats {
+  date: String!
+  total: Int!
+  byStatus: [StatusCount!]!
+}
+
+extend type Query {
+  appointments(doctorId: ID, date: String, status: AppointmentStatus): [Appointment!]! @auth(requires: STAFF)
+  dashboard(date: String): DashboardStats! @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  bookAppointment(input: BookAppointmentInput!): Appointment! @auth(requires: STAFF)
+  confirmAppointment(id: ID!): Appointment! @auth(requires: STAFF)
+  completeAppointment(id: ID!): Appointment! @auth(requires: STAFF)
+  cancelAppointment(id: ID!, cancelReason: String): Appointment! @auth(requires: STAFF)
+  markNoShow(id: ID!): Appointment! @auth(requires: STAFF)
+}

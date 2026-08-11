@@ -1,0 +1,58 @@
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+type Clinic {
+  id: ID!
+  name: String!
+  subdomain: String!
+  plan: Plan!
+  subscriptionStatus: String!
+  createdAt: DateTime!
+}
+
+input CreateClinicInput {
+  name: String!
+  subdomain: String!
+  plan: Plan
+}
+
+type CreateClinicPayload {
+  clinic: Clinic!
+  user: User!
+  accessToken: String!
+  refreshToken: String!
+}
+
+input InviteInput {
+  name: String!
+  email: String!
+  role: Role!
+  specialization: String
+}
+
+type InvitePayload {
+  user: User!
+  # Dev-only: returned until real email delivery lands (Phase 2 notifications).
+  inviteToken: String!
+}
+
+input AcceptInviteInput {
+  inviteToken: String!
+  name: String
+  password: String!
+  phone: String
+}
+
+extend type Query {
+  clinic: Clinic @auth(requires: STAFF)
+  clinicUsers: [User!]! @auth(requires: CLINIC_ADMIN)
+}
+
+extend type Mutation {
+  createClinic(input: CreateClinicInput!): CreateClinicPayload! @auth(requires: CLINIC_ADMIN)
+  inviteStaff(input: InviteInput!): InvitePayload! @auth(requires: CLINIC_ADMIN)
+  acceptInvite(input: AcceptInviteInput!): AuthPayload!
+}

@@ -1,0 +1,52 @@
+type User {
+  id: ID!
+  clinicId: ID
+  role: Role!
+  name: String!
+  email: String!
+  phone: String
+  emailVerified: Boolean!
+  createdAt: DateTime!
+}
+
+input SignupInput {
+  name: String!
+  email: String!
+  password: String!
+  phone: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input RefreshTokenInput {
+  refreshToken: String!
+}
+
+type AuthPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+}
+
+type SignupPayload {
+  accessToken: String!
+  refreshToken: String!
+  user: User!
+  # Dev-only: returned until real email delivery lands (Phase 2 notifications).
+  verificationToken: String!
+}
+
+extend type Query {
+  me: User @auth(requires: PATIENT)
+}
+
+extend type Mutation {
+  signup(input: SignupInput!): SignupPayload!
+  login(input: LoginInput!): AuthPayload!
+  refreshToken(input: RefreshTokenInput!): AuthPayload!
+  logout(refreshToken: String!): Boolean!
+  verifyEmail(token: String!): Boolean!
+}

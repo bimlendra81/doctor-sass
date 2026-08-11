@@ -1,0 +1,92 @@
+import { Link, Outlet } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth.js";
+import { useUiStore } from "../stores/uiStore.js";
+import { Button } from "./ui/index.js";
+
+export function AppLayout() {
+  const { user, logout } = useAuth();
+  const sidebarOpen = useUiStore((s) => s.sidebarOpen);
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="flex items-center justify-between border-b bg-white px-4 py-3">
+        <div className="flex items-center gap-3">
+          {user && (
+            <button
+              onClick={toggleSidebar}
+              className="rounded-lg border border-gray-300 px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+            >
+              {sidebarOpen ? "Hide" : "Show"} sidebar
+            </button>
+          )}
+          <Link to="/" className="font-semibold text-gray-900">
+            Doctor SaaS
+          </Link>
+        </div>
+        {user && (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600">{user.name}</span>
+            <Button variant="secondary" onClick={logout}>
+              Logout
+            </Button>
+          </div>
+        )}
+      </header>
+      <div className="flex">
+        {user && sidebarOpen && (
+          <aside className="w-48 shrink-0 border-r bg-white p-4 text-sm text-gray-700">
+            <p className="font-medium text-gray-500">Workspace</p>
+            <nav className="mt-2 space-y-1">
+              <Link
+                to="/"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Overview
+              </Link>
+              <Link
+                to="/team"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Team
+              </Link>
+              <Link
+                to="/patients"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Patients
+              </Link>
+              <Link
+                to="/schedule"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Schedule
+              </Link>
+              <Link
+                to="/booking"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Book
+              </Link>
+              <Link
+                to="/availability"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Availability
+              </Link>
+              <Link
+                to="/settings"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Settings
+              </Link>
+            </nav>
+          </aside>
+        )}
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}

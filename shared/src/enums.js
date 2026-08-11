@@ -1,0 +1,113 @@
+export const Role = Object.freeze({
+  SUPER_ADMIN: "SUPER_ADMIN",
+  CLINIC_ADMIN: "CLINIC_ADMIN",
+  DOCTOR: "DOCTOR",
+  STAFF: "STAFF",
+  PATIENT: "PATIENT",
+});
+
+export const Plan = Object.freeze({
+  FREE: "FREE",
+  PRO: "PRO",
+  ENTERPRISE: "ENTERPRISE",
+});
+
+export const AppointmentStatus = Object.freeze({
+  PENDING: "PENDING",
+  CONFIRMED: "CONFIRMED",
+  COMPLETED: "COMPLETED",
+  CANCELLED: "CANCELLED",
+  NO_SHOW: "NO_SHOW",
+});
+
+export const AppointmentType = Object.freeze({
+  IN_PERSON: "IN_PERSON",
+  VIDEO: "VIDEO",
+});
+
+// Curated IANA timezone list for the clinic settings timezone picker (M7).
+// Subset of the full tzdb — covers the major regions the platform serves.
+export const IANA_ZONES = Object.freeze([
+  "UTC",
+  "Africa/Abidjan",
+  "Africa/Cairo",
+  "Africa/Casablanca",
+  "Africa/Johannesburg",
+  "Africa/Lagos",
+  "Africa/Nairobi",
+  "America/Anchorage",
+  "America/Bogota",
+  "America/Buenos_Aires",
+  "America/Chicago",
+  "America/Denver",
+  "America/Halifax",
+  "America/Los_Angeles",
+  "America/Mexico_City",
+  "America/New_York",
+  "America/Phoenix",
+  "America/Santiago",
+  "America/Sao_Paulo",
+  "America/Toronto",
+  "Asia/Almaty",
+  "Asia/Baghdad",
+  "Asia/Bangkok",
+  "Asia/Dhaka",
+  "Asia/Dubai",
+  "Asia/Hong_Kong",
+  "Asia/Istanbul",
+  "Asia/Jakarta",
+  "Asia/Jerusalem",
+  "Asia/Karachi",
+  "Asia/Kolkata",
+  "Asia/Kuala_Lumpur",
+  "Asia/Manila",
+  "Asia/Seoul",
+  "Asia/Shanghai",
+  "Asia/Singapore",
+  "Asia/Taipei",
+  "Asia/Tehran",
+  "Asia/Tokyo",
+  "Australia/Adelaide",
+  "Australia/Brisbane",
+  "Australia/Melbourne",
+  "Australia/Perth",
+  "Australia/Sydney",
+  "Europe/Amsterdam",
+  "Europe/Athens",
+  "Europe/Berlin",
+  "Europe/Dublin",
+  "Europe/Helsinki",
+  "Europe/Lisbon",
+  "Europe/London",
+  "Europe/Madrid",
+  "Europe/Oslo",
+  "Europe/Paris",
+  "Europe/Prague",
+  "Europe/Rome",
+  "Europe/Stockholm",
+  "Europe/Vienna",
+  "Europe/Warsaw",
+  "Europe/Zurich",
+  "Pacific/Auckland",
+  "Pacific/Honolulu",
+  "Pacific/Tongatapu",
+]);
+
+export const Currency = Object.freeze({
+  USD: "usd",
+  EUR: "eur",
+  GBP: "gbp",
+  INR: "inr",
+  AUD: "aud",
+  CAD: "cad",
+  NZD: "nzd",
+  AED: "aed",
+  SGD: "sgd",
+  ZAR: "zar",
+  NGN: "ngn",
+  KES: "kes",
+  JPY: "jpy",
+  BRL: "brl",
+});
+
+export const CURRENCIES = Object.freeze(Object.values(Currency));

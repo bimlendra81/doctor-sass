@@ -1,0 +1,52 @@
+type Patient {
+  id: ID!
+  clinicId: ID!
+  userId: ID
+  name: String!
+  email: String
+  phone: String
+  dob: DateTime
+  gender: String
+  bloodGroup: String
+  address: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+input CreatePatientInput {
+  name: String!
+  email: String
+  phone: String
+  dob: DateTime
+  gender: String
+  bloodGroup: String
+  address: String
+}
+
+input UpdatePatientInput {
+  name: String
+  email: String
+  phone: String
+  dob: DateTime
+  gender: String
+  bloodGroup: String
+  address: String
+}
+
+type PatientConnection {
+  items: [Patient!]!
+  total: Int!
+  page: Int!
+  pageSize: Int!
+}
+
+extend type Query {
+  patients(search: String, page: Int, pageSize: Int): PatientConnection! @auth(requires: STAFF)
+  patient(id: ID!): Patient @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  createPatient(input: CreatePatientInput!): Patient! @auth(requires: STAFF)
+  updatePatient(id: ID!, input: UpdatePatientInput!): Patient! @auth(requires: STAFF)
+  deletePatient(id: ID!): Boolean! @auth(requires: STAFF)
+}

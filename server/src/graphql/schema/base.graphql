@@ -1,0 +1,19 @@
+directive @auth(requires: Role!) on FIELD_DEFINITION
+
+scalar DateTime
+
+type Query {
+  ping: String!
+}
+
+type Mutation {
+  _empty: Boolean
+}
+
+enum Role {
+  SUPER_ADMIN
+  CLINIC_ADMIN
+  DOCTOR
+  STAFF
+  PATIENT
+}
