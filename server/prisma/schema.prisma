@@ -237,6 +237,7 @@ model PrescriptionItem {
   id             String       @id @default(uuid())
   prescriptionId String
   prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  sortOrder      Int          @default(0)
   drugName       String
   dosage         String?
   frequency      String?

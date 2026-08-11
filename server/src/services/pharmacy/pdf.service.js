@@ -35,7 +35,7 @@ export async function getPrescriptionPdf(user, id) {
   const prescription = await prisma.prescription.findFirst({
     where: { id, clinicId: user.clinicId },
     include: {
-      items: { orderBy: { createdAt: "asc" } },
+      items: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
       patient: true,
       doctor: { include: { user: true } },
     },

@@ -143,6 +143,14 @@ export function Schedule() {
                       <button onClick={() => run(() => noShow({ variables: { id: a.id } }))} className="text-xs font-medium text-red-600 hover:underline">No-show</button>
                     </>
                   )}
+                  {a.status === "COMPLETED" && (
+                    <a
+                      href={`/prescriptions?appointmentId=${a.id}&patientId=${a.patient?.id}`}
+                      className="text-xs font-medium text-teal-600 hover:underline"
+                    >
+                      Rx
+                    </a>
+                  )}
                 </div>
               </li>
             ))}

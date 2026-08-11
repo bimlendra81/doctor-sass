@@ -8,7 +8,7 @@ import {
 } from "../validators/prescription.validator.js";
 
 const PRESCRIPTION_WITH_ITEMS = {
-  include: { items: { orderBy: { createdAt: "asc" } } },
+  include: { items: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] } },
 };
 
 export async function listPrescriptions(ctx, { patientId, doctorId, status } = {}) {
@@ -79,7 +79,7 @@ export async function createPrescription(ctx, input) {
       doctorId: data.doctorId,
       appointmentId: data.appointmentId ?? null,
       notes: data.notes ?? null,
-      items: { create: data.items.map((item) => normalizeItem(item)) },
+      items: { create: data.items.map((item, index) => normalizeItem(item, index)) },
     },
     ...PRESCRIPTION_WITH_ITEMS,
   });
@@ -96,7 +96,7 @@ export async function updatePrescription(ctx, id, input) {
     await tx.prescriptionItem.deleteMany({ where: { prescriptionId: id } });
     const updates = { notes: data.notes ?? null };
     if (data.items) {
-      updates.items = { create: data.items.map((item) => normalizeItem(item)) };
+      updates.items = { create: data.items.map((item, index) => normalizeItem(item, index)) };
     }
     return tx.prescription.update({
       where: { id },
@@ -139,8 +139,9 @@ export async function voidPrescription(ctx, id, reason) {
   });
 }
 
-function normalizeItem(item) {
+function normalizeItem(item, index) {
   return {
+    sortOrder: index,
     drugName: item.drugName,
     dosage: item.dosage ?? null,
     frequency: item.frequency ?? null,

@@ -7,6 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/graphql": "http://localhost:4000",
+      "/prescriptions": "http://localhost:4000",
     },
   },
 });

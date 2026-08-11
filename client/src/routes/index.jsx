@@ -11,6 +11,7 @@ import { Schedule } from "../pages/Schedule.jsx";
 import { Booking } from "../pages/Booking.jsx";
 import { Availability } from "../pages/Availability.jsx";
 import { Settings } from "../pages/Settings.jsx";
+import { Prescriptions } from "../pages/Prescriptions.jsx";
 
 const router = createBrowserRouter([
   {
@@ -63,6 +64,14 @@ const router = createBrowserRouter([
         element: (
           <RequireAuth>
             <Availability />
+          </RequireAuth>
+        ),
+      },
+      {
+        path: "/prescriptions",
+        element: (
+          <RequireAuth>
+            <Prescriptions />
           </RequireAuth>
         ),
       },

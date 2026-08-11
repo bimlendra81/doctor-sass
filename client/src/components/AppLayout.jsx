@@ -75,6 +75,12 @@ export function AppLayout() {
                 Availability
               </Link>
               <Link
+                to="/prescriptions"
+                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+              >
+                Prescriptions
+              </Link>
+              <Link
                 to="/settings"
                 className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
               >
