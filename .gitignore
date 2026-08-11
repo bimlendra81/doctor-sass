@@ -27,8 +27,7 @@ server/prisma/migrations/dev.db
 # docs / planning / memory (keep only README.md and rule files)
 *.md
 !README.md
-!rule.md
-!global-rule.md
+
 
 # gitnexus index (code memory)
 .gitnexus/

@@ -34,6 +34,12 @@ enum AppointmentType {
   VIDEO
 }
 
+enum PrescriptionStatus {
+  DRAFT
+  ACTIVE
+  VOID
+}
+
 model Clinic {
   id                 String              @id @default(uuid())
   name               String
@@ -52,6 +58,7 @@ model Clinic {
   appointments       Appointment[]
   doctorAvailabilities DoctorAvailability[]
   scheduleOverrides  ScheduleOverride[]
+  prescriptions      Prescription[]
 }
 
 model User {
@@ -109,6 +116,7 @@ model Doctor {
   availabilities DoctorAvailability[]
   overrides      ScheduleOverride[]
   appointments   Appointment[]
+  prescriptions Prescription[]
 }
 
 model DoctorAvailability {
@@ -158,6 +166,7 @@ model Patient {
   updatedAt   DateTime     @updatedAt
   deletedAt   DateTime?
   appointments Appointment[]
+  prescriptions Prescription[]
 
   @@index([clinicId])
 }
@@ -179,7 +188,65 @@ model Appointment {
   cancelledAt  DateTime?
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
+  prescriptions Prescription[]
 
   @@index([clinicId, startTime])
   @@index([doctorId, startTime])
+}
+
+model Drug {
+  id           String    @id @default(uuid())
+  name         String    @unique
+  category     String?
+  uses         String?
+  sideEffects  String?
+  strength     String?
+  packSize     String?
+  manufacturer String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Prescription {
+  id            String             @id @default(uuid())
+  clinicId      String
+  clinic        Clinic             @relation(fields: [clinicId], references: [id])
+  patientId     String
+  patient       Patient            @relation(fields: [patientId], references: [id])
+  doctorId      String
+  doctor        Doctor             @relation(fields: [doctorId], references: [id])
+  appointmentId String?
+  appointment   Appointment?       @relation(fields: [appointmentId], references: [id])
+  status        PrescriptionStatus @default(DRAFT)
+  scriptNo      Int?
+  issuedAt      DateTime?
+  notes         String?
+  voidReason    String?
+  voidedAt      DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  items         PrescriptionItem[]
+
+  @@index([clinicId, createdAt])
+  @@index([patientId])
+  @@index([doctorId])
+  @@index([appointmentId])
+}
+
+model PrescriptionItem {
+  id             String       @id @default(uuid())
+  prescriptionId String
+  prescription   Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  drugName       String
+  dosage         String?
+  frequency      String?
+  duration       String?
+  instructions   String?
+  strength       String?
+  quantity       Int?
+  refills        Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([prescriptionId])
 }
