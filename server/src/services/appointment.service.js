@@ -6,6 +6,7 @@ import { validate } from "../utils/validate.js";
 import { bookAppointmentSchema, cancelAppointmentSchema } from "../validators/appointment.validator.js";
 import { getClinicTimezone } from "./clinic.service.js";
 import { doctorSlots } from "./availability.service.js";
+import { assertPlanLimit } from "./subscription.service.js";
 
 const TERMINAL = new Set([
   AppointmentStatus.COMPLETED,
@@ -73,6 +74,7 @@ export async function dashboardStats(ctx, dateStr) {
 }
 
 export async function bookAppointment(ctx, input) {
+  await assertPlanLimit(ctx, "appointments");
   const data = validate(bookAppointmentSchema, input);
 
   const doctor = await prisma.doctor.findFirst({

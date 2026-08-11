@@ -3,6 +3,7 @@ import { AppError, notFound } from "../utils/errors.js";
 import { validate } from "../utils/validate.js";
 import { zonedDayBounds } from "../utils/timezone.js";
 import { getClinicTimezone } from "./clinic.service.js";
+import { assertPlanLimit } from "./subscription.service.js";
 import {
   createInvoiceSchema,
   recordPaymentSchema,
@@ -61,6 +62,7 @@ function computeTotals(items, taxRate) {
 }
 
 export async function createInvoice(ctx, input) {
+  await assertPlanLimit(ctx, "invoices");
   const data = validate(createInvoiceSchema, input);
   const taxRate = data.taxRate ?? 0;
 

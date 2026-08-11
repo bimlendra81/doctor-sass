@@ -18,6 +18,7 @@
     "@graphql-tools/merge": "^9.0.8",
     "@graphql-tools/utils": "^11.2.2",
     "@prisma/client": "^5.22.0",
+    "@sentry/node": "^10.70.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dataloader": "^2.2.2",

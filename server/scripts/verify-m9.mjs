@@ -12,6 +12,9 @@
 //   - tenant isolation: cross-clinic invoice(id) NOT_FOUND, empty list
 //   - authZ: unauthenticated + role + validation errors
 
+import "dotenv/config";
+import { prisma } from "../src/config/db.js";
+
 const BASE = process.argv[2] ?? "http://localhost:4000";
 const API = `${BASE}/graphql`;
 
@@ -26,6 +29,10 @@ function check(name, cond, extra = "") {
     failed++;
     console.error(`  \u2717 ${name}${extra ? ` \u2014 ${extra}` : ""}`);
   }
+}
+
+async function setPlan(clinicId, plan = "PRO") {
+  await prisma.clinic.update({ where: { id: clinicId }, data: { plan } });
 }
 
 class GqlError extends Error {
@@ -83,6 +90,7 @@ async function main() {
   res = await gql(M.createClinic, { input: { name: "M9 Clinic A", subdomain: `m9a${suffix}` } }, res.signup.accessToken);
   const tokenA = res.createClinic.accessToken;
   const clinicA = res.createClinic.clinic.id;
+  await setPlan(clinicA);
   check("clinic A onboarded", !!clinicA);
 
   await gql(M.settings, { input: { currency: "eur", timezone: "UTC" } }, tokenA);

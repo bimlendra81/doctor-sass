@@ -1,0 +1,35 @@
+type SubscriptionFeatures {
+  prescriptions: Boolean!
+  invoices: Boolean!
+}
+
+type SubscriptionLimits {
+  patients: Int
+  appointmentsPerDay: Int
+  features: SubscriptionFeatures!
+}
+
+type SubscriptionUsage {
+  patients: Int!
+  appointmentsToday: Int!
+}
+
+type SubscriptionInfo {
+  plan: Plan!
+  subscriptionStatus: String!
+  limits: SubscriptionLimits!
+  usage: SubscriptionUsage!
+}
+
+type CheckoutSessionPayload {
+  url: String
+  devMode: Boolean!
+}
+
+extend type Query {
+  subscriptionInfo: SubscriptionInfo! @auth(requires: STAFF)
+}
+
+extend type Mutation {
+  createCheckoutSession(plan: Plan!): CheckoutSessionPayload! @auth(requires: CLINIC_ADMIN)
+}

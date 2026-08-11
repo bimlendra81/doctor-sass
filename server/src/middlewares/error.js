@@ -1,4 +1,6 @@
 import { AppError } from "../utils/errors.js";
+import { logger } from "../utils/logger.js";
+import { getSentry } from "../config/sentry.js";
 
 export function errorHandler(err, _req, res, _next) {
   if (err instanceof AppError) {
@@ -8,6 +10,7 @@ export function errorHandler(err, _req, res, _next) {
     return;
   }
 
-  console.error(err);
+  logger.error("unhandled error", { error: err.message, stack: err.stack });
+  getSentry()?.captureException?.(err);
   res.status(500).json({ error: { code: "INTERNAL_ERROR", message: "Internal server error" } });
 }

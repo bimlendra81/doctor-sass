@@ -2,6 +2,7 @@ import { prisma } from "../config/db.js";
 import { notFound } from "../utils/errors.js";
 import { validate } from "../utils/validate.js";
 import { createPatientSchema, updatePatientSchema } from "../validators/patient.validator.js";
+import { assertPlanLimit } from "./subscription.service.js";
 
 const PAGE_SIZE_DEFAULT = 20;
 const PAGE_SIZE_MAX = 100;
@@ -70,6 +71,7 @@ export async function getPatient(ctx, id) {
 }
 
 export async function createPatient(ctx, input) {
+  await assertPlanLimit(ctx, "patients");
   const data = normalizeInput(input, createPatientSchema);
   return prisma.patient.create({
     data: { clinicId: ctx.clinicId, ...data },

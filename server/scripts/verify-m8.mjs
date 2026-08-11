@@ -12,6 +12,9 @@
 //   - GET /prescriptions/:id/pdf -> branded PDF, tenant-scoped (cross-clinic 404)
 //   - authZ: unauthenticated + cross-tenant NOT_FOUND
 
+import "dotenv/config";
+import { prisma } from "../src/config/db.js";
+
 const BASE = process.argv[2] ?? "http://localhost:4000";
 const API = `${BASE}/graphql`;
 
@@ -26,6 +29,10 @@ function check(name, cond, extra = "") {
     failed++;
     console.error(`  \u2717 ${name}${extra ? ` \u2014 ${extra}` : ""}`);
   }
+}
+
+async function setPlan(clinicId, plan = "PRO") {
+  await prisma.clinic.update({ where: { id: clinicId }, data: { plan } });
 }
 
 class GqlError extends Error {
@@ -98,6 +105,7 @@ async function main() {
   res = await gql(M.createClinic, { input: { name: "M8 Clinic A", subdomain: `m8a${suffix}` } }, res.signup.accessToken);
   const tokenA = res.createClinic.accessToken;
   const clinicA = res.createClinic.clinic.id;
+  await setPlan(clinicA);
   check("clinic A onboarded", !!clinicA);
 
   await gql(

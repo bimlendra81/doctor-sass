@@ -1,6 +1,7 @@
 import { prisma } from "../config/db.js";
 import { AppError, notFound } from "../utils/errors.js";
 import { validate } from "../utils/validate.js";
+import { assertPlanLimit } from "./subscription.service.js";
 import {
   createPrescriptionSchema,
   updatePrescriptionSchema,
@@ -39,6 +40,7 @@ export async function getPrescription(ctx, id) {
 }
 
 export async function createPrescription(ctx, input) {
+  await assertPlanLimit(ctx, "prescriptions");
   const data = validate(createPrescriptionSchema, input);
 
   const [patient, doctor] = await Promise.all([

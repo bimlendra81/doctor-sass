@@ -4,7 +4,6 @@ Multi-tenant SaaS for doctors/clinics: patients, appointments, prescriptions, bi
 
 Stack: React (Vite) · Node.js (Express) · MySQL (Prisma) · GraphQL (Apollo Server)
 
-See `doctor-saas-platform-plan.md` for the full product plan and `phase1.md` for the milestone roadmap.
 
 ## Development
 
