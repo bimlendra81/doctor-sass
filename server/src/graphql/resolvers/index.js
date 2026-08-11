@@ -45,6 +45,7 @@ export const resolvers = {
   Invoice: billingResolvers.Invoice,
   InvoiceItem: billingResolvers.InvoiceItem,
   Payment: billingResolvers.Payment,
+  MedicalRecord: recordsResolvers.MedicalRecord,
   DateTime: {
     __serialize: (value) => new Date(value).toISOString(),
     __parseValue: (value) => new Date(value),
