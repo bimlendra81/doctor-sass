@@ -4,6 +4,7 @@ import { Button, Input } from "../components/ui/index.js";
 import {
   CREATE_PATIENT_MUTATION,
   DELETE_PATIENT_MUTATION,
+  PATIENT_INVITE_MUTATION,
   PATIENTS_QUERY,
   UPDATE_PATIENT_MUTATION,
 } from "../features/patients/api.js";
@@ -27,6 +28,10 @@ export function Patients() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [error, setError] = useState(null);
+  const [inviting, setInviting] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteToken, setInviteToken] = useState(null);
+  const [inviteError, setInviteError] = useState(null);
 
   const { data, loading, refetch } = useQuery(PATIENTS_QUERY, {
     variables: { search: search || null, page: 1, pageSize: 50 },
@@ -34,6 +39,7 @@ export function Patients() {
   const [createPatient, { loading: creating }] = useMutation(CREATE_PATIENT_MUTATION);
   const [updatePatient, { loading: updating }] = useMutation(UPDATE_PATIENT_MUTATION);
   const [deletePatient, { loading: deleting }] = useMutation(DELETE_PATIENT_MUTATION);
+  const [patientInvite, { loading: invitingLoading }] = useMutation(PATIENT_INVITE_MUTATION);
 
   const set = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
@@ -74,6 +80,25 @@ export function Patients() {
       refetch();
     } catch (err) {
       setError(err.graphQLErrors?.[0]?.message ?? err.message ?? "Delete failed");
+    }
+  };
+
+  const openInvite = (p) => {
+    setInviting(p);
+    setInviteEmail(p.email ?? "");
+    setInviteToken(null);
+    setInviteError(null);
+  };
+
+  const onInvite = async (e) => {
+    e.preventDefault();
+    setInviteError(null);
+    setInviteToken(null);
+    try {
+      const res = await patientInvite({ variables: { patientId: inviting.id, email: inviteEmail } });
+      setInviteToken(res.data.patientInvite.inviteToken);
+    } catch (err) {
+      setInviteError(err.graphQLErrors?.[0]?.message ?? err.message ?? "Invite failed");
     }
   };
 
@@ -150,7 +175,10 @@ export function Patients() {
                   <td className="py-3 pr-4 text-gray-600">{p.email || "—"}</td>
                   <td className="py-3 pr-4 text-gray-600">{p.bloodGroup || "—"}</td>
                   <td className="py-3 text-right">
-                    <button onClick={() => startEdit(p)} className="text-blue-600 hover:underline">
+                    <button onClick={() => openInvite(p)} className="text-teal-600 hover:underline">
+                      Invite
+                    </button>
+                    <button onClick={() => startEdit(p)} className="ml-3 text-blue-600 hover:underline">
                       Edit
                     </button>
                     <button onClick={() => onDelete(p)} className="ml-3 text-red-600 hover:underline">
@@ -163,6 +191,39 @@ export function Patients() {
           </table>
         )}
       </div>
+
+      {inviting && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4" onClick={() => setInviting(null)}>
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold text-gray-900">Invite {inviting.name}</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Sends a portal invite to the patient&apos;s email. Share the activation link with them.
+            </p>
+            <form onSubmit={onInvite} className="mt-4 space-y-4">
+              <Input label="Email" type="email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} required />
+              {inviteError && <p className="text-sm text-red-600">{inviteError}</p>}
+              {inviteToken && (
+                <div className="rounded-lg bg-gray-50 p-3 text-sm">
+                  <p className="font-medium text-gray-700">Activation link</p>
+                  <p className="mt-1 break-all text-blue-600">
+                    {`${window.location.origin}/invite/${inviteToken}`}
+                  </p>
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <Button variant="secondary" onClick={() => setInviting(null)}>
+                  Close
+                </Button>
+                {!inviteToken && (
+                  <Button type="submit" disabled={invitingLoading}>
+                    {invitingLoading ? "Sending…" : "Send invite"}
+                  </Button>
+                )}
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

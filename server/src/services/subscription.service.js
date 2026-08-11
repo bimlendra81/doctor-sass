@@ -196,7 +196,30 @@ export async function processStripeEvent(event) {
     await prisma.$transaction(async (tx) => {
       switch (type) {
         case "checkout.session.completed": {
-          if (object.mode !== "subscription") break;
+          if (object.mode === "payment") {
+            const invoiceId = object.metadata?.invoiceId;
+            if (invoiceId) {
+              const invoice = await tx.invoice.findUnique({
+                where: { id: invoiceId },
+                select: { id: true, clinicId: true, status: true },
+              });
+              if (invoice) {
+                await tx.payment.create({
+                  data: {
+                    clinicId: invoice.clinicId,
+                    invoiceId: invoice.id,
+                    amount: (object.amount_total ?? 0) / 100,
+                    method: "ONLINE",
+                    stripePaymentId: typeof object.payment_intent === "string" ? object.payment_intent : null,
+                    note: "Online payment via Stripe Checkout",
+                  },
+                });
+                await tx.invoice.update({ where: { id: invoice.id }, data: { status: "PAID" } });
+                logger.info("checkout.session.completed -> invoice paid", { eventId, invoiceId });
+              }
+            }
+            break;
+          }
           const clinicId = object.metadata?.clinicId;
           if (clinicId) {
             await tx.clinic.update({

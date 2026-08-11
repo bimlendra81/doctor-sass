@@ -64,6 +64,29 @@ npm run dev
 Or individually: `npm run dev:server`, `npm run dev:client`.
 
 
+## Login & URLs
+
+The client runs at http://localhost:5173 and the GraphQL API at http://localhost:4000.
+
+| URL | Purpose |
+|-----|---------|
+| http://localhost:5173/signup | Create the clinic owner account (role: admin) |
+| http://localhost:5173/setup | First-time clinic onboarding (subdomain, name, plan) |
+| http://localhost:5173/login | Staff / doctor / patient login |
+| http://localhost:5173/portal | Patient portal (self-serve booking, prescriptions, invoices, records) |
+| http://localhost:5173/invite/:token | Patient invite activation link (sent by clinic staff) |
+| http://localhost:4000/graphql | GraphQL playground |
+| http://localhost:4000/health | Health check |
+
+There are **no seeded demo accounts** — create one:
+
+1. Sign up at `/signup`, then complete clinic setup at `/setup`.
+2. Add a doctor under **Team** and staff under **Patients**.
+3. On the **Patients** page, click **Invite** on any patient → a portal activation link is generated (`/invite/:token`). Open it in a private window, set a password, and sign in at `/portal` as the patient.
+
+Patient portal access requires a `PATIENT` role user whose account was activated through an invite; staff accounts always land in the clinic workspace.
+
+
 ## Features
 
 - **Multi-tenant clinics** — subdomain-based onboarding, roles (admin / staff / doctor / patient), invites.
@@ -74,6 +97,7 @@ Or individually: `npm run dev:server`, `npm run dev:client`.
 - **Subscriptions & Stripe (M10)** — per-plan usage limits enforced server-side, Stripe Checkout for upgrades, idempotent webhook sync, structured logging + optional Sentry.
 - **Notifications & reminders (M11)** — in-app feed with per-channel preferences (email/SMS/in-app), appointment status fan-out, T24H/T1H reminder jobs, password reset.
 - **Medical records (M12)** — typed records (lab/imaging/clinical note/referral/other) with optional file attachments; storage driver is env-selected (S3 presigned URLs when `S3_ACCESS_KEY` + `S3_BUCKET` are set, otherwise authenticated local `/files` routes under `server/uploads/`), expiring upload/download URLs, soft delete.
+- **Patient portal (M13)** — patient invites (`patientInvite` + `acceptPatientInvite`), self-serve booking from portal doctor slots, own prescriptions with branded PDF download, invoice payment (dev-mode when no Stripe keys), own medical records with file download, appointment reminders folded into the patient's notification feed + email.
 - Video consults (planned).
 
 

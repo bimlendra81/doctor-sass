@@ -9,7 +9,8 @@ export function AppLayout() {
   const { user, logout } = useAuth();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
-  const { data: settingsData } = useQuery(CLINIC_SETTINGS_QUERY, { skip: !user });
+  const isPatient = user?.role === "PATIENT";
+  const { data: settingsData } = useQuery(CLINIC_SETTINGS_QUERY, { skip: !user || isPatient });
   const plan = settingsData?.clinicSettings?.plan;
 
   return (
@@ -24,13 +25,13 @@ export function AppLayout() {
               {sidebarOpen ? "Hide" : "Show"} sidebar
             </button>
           )}
-          <Link to="/" className="font-semibold text-gray-900">
+          <Link to={isPatient ? "/portal" : "/"} className="font-semibold text-gray-900">
             Doctor SaaS
           </Link>
         </div>
         {user && (
           <div className="flex items-center gap-3">
-            {plan && (
+            {plan && !isPatient && (
               <Link
                 to="/billing"
                 className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-semibold text-teal-700 hover:bg-teal-100"
@@ -48,80 +49,88 @@ export function AppLayout() {
       <div className="flex">
         {user && sidebarOpen && (
           <aside className="w-48 shrink-0 border-r bg-white p-4 text-sm text-gray-700">
-            <p className="font-medium text-gray-500">Workspace</p>
+            <p className="font-medium text-gray-500">{isPatient ? "Portal" : "Workspace"}</p>
             <nav className="mt-2 space-y-1">
-              <Link
-                to="/"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Overview
-              </Link>
-              <Link
-                to="/team"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Team
-              </Link>
-              <Link
-                to="/patients"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Patients
-              </Link>
-              <Link
-                to="/schedule"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Schedule
-              </Link>
-              <Link
-                to="/booking"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Book
-              </Link>
-              <Link
-                to="/availability"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Availability
-              </Link>
-              <Link
-                to="/prescriptions"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Prescriptions
-              </Link>
-              <Link
-                to="/records"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Records
-              </Link>
-              <Link
-                to="/invoices"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Invoices
-              </Link>
-              <Link
-                to="/billing"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Billing
-              </Link>
-              <Link
-                to="/notifications"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Notifications
-              </Link>
-              <Link
-                to="/settings"
-                className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
-              >
-                Settings
-              </Link>
+              {isPatient ? (
+                <Link to="/portal" className="block rounded-lg px-2 py-1.5 hover:bg-gray-100">
+                  My portal
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    to="/"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Overview
+                  </Link>
+                  <Link
+                    to="/team"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Team
+                  </Link>
+                  <Link
+                    to="/patients"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Patients
+                  </Link>
+                  <Link
+                    to="/schedule"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Schedule
+                  </Link>
+                  <Link
+                    to="/booking"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Book
+                  </Link>
+                  <Link
+                    to="/availability"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Availability
+                  </Link>
+                  <Link
+                    to="/prescriptions"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Prescriptions
+                  </Link>
+                  <Link
+                    to="/records"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Records
+                  </Link>
+                  <Link
+                    to="/invoices"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Invoices
+                  </Link>
+                  <Link
+                    to="/billing"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Billing
+                  </Link>
+                  <Link
+                    to="/notifications"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Notifications
+                  </Link>
+                  <Link
+                    to="/settings"
+                    className="block rounded-lg px-2 py-1.5 hover:bg-gray-100"
+                  >
+                    Settings
+                  </Link>
+                </>
+              )}
             </nav>
           </aside>
         )}

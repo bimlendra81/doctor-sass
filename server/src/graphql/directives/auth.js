@@ -11,7 +11,8 @@ const ROLE_ORDER = {
   [Role.SUPER_ADMIN]: 4,
 };
 
-function hasRequiredRole(userRole, required) {
+function hasRequiredRole(userRole, required, exact) {
+  if (exact) return userRole === required;
   return (ROLE_ORDER[userRole] ?? -1) >= (ROLE_ORDER[required] ?? Number.MAX_SAFE_INTEGER);
 }
 
@@ -21,7 +22,7 @@ export function authDirectiveTransformer(schema) {
       const directive = getDirective(schema, fieldConfig, "auth")?.[0];
       if (!directive) return fieldConfig;
 
-      const { requires } = directive;
+      const { requires, exact } = directive;
       const originalResolver = fieldConfig.resolve ?? defaultFieldResolver;
 
       fieldConfig.resolve = async (source, args, context, info) => {
@@ -29,7 +30,7 @@ export function authDirectiveTransformer(schema) {
         if (!user) {
           throw unauthorized("Authentication required");
         }
-        if (!hasRequiredRole(user.role, requires)) {
+        if (!hasRequiredRole(user.role, requires, exact)) {
           throw forbidden(`Role ${requires} or higher required`);
         }
         return originalResolver(source, args, context, info);

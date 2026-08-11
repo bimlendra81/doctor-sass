@@ -50,3 +50,19 @@ export const DELETE_PATIENT_MUTATION = gql`
     deletePatient(id: $id)
   }
 `;
+
+export const PATIENT_INVITE_MUTATION = gql`
+  mutation PatientInvite($patientId: ID!, $email: String!) {
+    patientInvite(patientId: $patientId, email: $email) {
+      inviteToken
+      user {
+        id
+        email
+      }
+      patient {
+        id
+        name
+      }
+    }
+  }
+`;

@@ -32,8 +32,16 @@ async function tryFetchImage(url) {
 }
 
 export async function getPrescriptionPdf(user, id) {
+  const where = { id, clinicId: user.clinicId };
+  if (user.role === "PATIENT") {
+    const patient = await prisma.patient.findUnique({ where: { userId: user.id } });
+    if (!patient || patient.deletedAt) {
+      throw notFound("Prescription not found");
+    }
+    where.patientId = patient.id;
+  }
   const prescription = await prisma.prescription.findFirst({
-    where: { id, clinicId: user.clinicId },
+    where,
     include: {
       items: { orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }] },
       patient: true,

@@ -1,0 +1,53 @@
+type AppointmentConnection {
+  items: [Appointment!]!
+  total: Int!
+  page: Int!
+  pageSize: Int!
+}
+
+type PatientInvitePayload {
+  # Dev-only: returned until real email delivery is configured; also emailed.
+  inviteToken: String!
+  user: User!
+  patient: Patient!
+}
+
+input AcceptPatientInviteInput {
+  inviteToken: String!
+  name: String
+  password: String!
+  phone: String
+}
+
+input BookMyAppointmentInput {
+  doctorId: ID!
+  startTime: DateTime!
+  type: AppointmentType
+  note: String
+}
+
+type PayInvoicePayload {
+  invoice: Invoice!
+  devMode: Boolean!
+  url: String
+}
+
+extend type Query {
+  myProfile: Patient! @auth(requires: PATIENT, exact: true)
+  myAppointments(status: AppointmentStatus, page: Int, pageSize: Int): AppointmentConnection!
+    @auth(requires: PATIENT, exact: true)
+  myPrescriptions: [Prescription!]! @auth(requires: PATIENT, exact: true)
+  myInvoices: [Invoice!]! @auth(requires: PATIENT, exact: true)
+  myRecords: [MedicalRecord!]! @auth(requires: PATIENT, exact: true)
+  myRecordFileUrl(id: ID!): DownloadUrl @auth(requires: PATIENT, exact: true)
+  portalDoctors: [Doctor!]! @auth(requires: PATIENT, exact: true)
+  portalDoctorSlots(doctorId: ID!, date: String!): [TimeSlot!]! @auth(requires: PATIENT, exact: true)
+}
+
+extend type Mutation {
+  patientInvite(patientId: ID!, email: String!): PatientInvitePayload! @auth(requires: STAFF)
+  acceptPatientInvite(input: AcceptPatientInviteInput!): AuthPayload!
+  bookMyAppointment(input: BookMyAppointmentInput!): Appointment! @auth(requires: PATIENT, exact: true)
+  cancelMyAppointment(id: ID!, cancelReason: String): Appointment! @auth(requires: PATIENT, exact: true)
+  payInvoice(invoiceId: ID!): PayInvoicePayload! @auth(requires: PATIENT, exact: true)
+}
