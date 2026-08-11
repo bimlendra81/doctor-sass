@@ -9,7 +9,8 @@
     "start": "node src/index.js",
     "db:migrate": "prisma migrate dev",
     "db:generate": "prisma generate",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "node scripts/seed-drugs.mjs && node scripts/seed-demo.mjs"
   },
   "dependencies": {
     "@apollo/server": "^4.11.0",

@@ -86,6 +86,26 @@ There are **no seeded demo accounts** — create one:
 
 Patient portal access requires a `PATIENT` role user whose account was activated through an invite; staff accounts always land in the clinic workspace.
 
+### Demo accounts
+
+Run the seed once to provision a ready-to-use demo clinic (`demo` subdomain, PRO plan):
+
+```bash
+npm run db:seed
+```
+
+All demo accounts share the password **`Password123!`**:
+
+| Account | Email | Role | Logs in as |
+|---------|-------|------|-----------|
+| Admin | `admin@demo.clinic` | Clinic admin | Clinic workspace — full control |
+| Doctor | `doctor@demo.clinic` | Doctor | Clinic workspace — availability, prescriptions |
+| Patient | `patient@demo.clinic` | Patient | Patient portal (`/portal`) — booking, prescriptions, invoices, records |
+
+The seed is idempotent — re-running it won't duplicate data. It also creates a weekly availability for the doctor, one upcoming confirmed appointment, an active prescription, an open + paid invoice, and a medical record for the patient so every demo page has data.
+
+To reset the demo data instead, drop and re-migrate the database, then re-run `npm run db:seed`.
+
 
 ## Features
 
